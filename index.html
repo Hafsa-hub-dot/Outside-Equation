@@ -131,7 +131,19 @@
       .print-area .certificate{box-shadow:none;zoom:1;width:210mm;min-height:297mm;margin:0}
       @page{size:A4 portrait;margin:0}
     }
-  </style>
+  
+    .admin-entry{max-width:1120px;margin:5px auto 20px;padding:0 16px;text-align:center}
+    .admin-toggle{border:1px solid #d6c1a0;background:transparent;color:#766953;border-radius:999px;padding:9px 18px;font:600 13px 'IBM Plex Sans Arabic',sans-serif;cursor:pointer}
+    .admin-panel{max-width:620px;margin:18px auto;background:#fffdf9;border:1px solid #d9c3a0;border-radius:18px;padding:22px;box-shadow:0 12px 30px #26213012;text-align:right}
+    .admin-panel[hidden],.admin-auth[hidden],.admin-logged[hidden]{display:none!important}
+    .admin-panel h3{margin:0 0 8px;font:normal 27px 'Amiri',serif}
+    .admin-panel p{font-size:14px;color:#675b4b;line-height:1.9}
+    .admin-line{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .admin-line input{flex:1;min-width:180px}
+    .admin-line .btn{white-space:nowrap}
+    .admin-status{color:#694c30;font-size:13px;line-height:1.9;margin-top:8px}
+    .delete-btn{background:#fff5f4;border:1px solid #d6a6a2;color:#a22c35}
+</style>
 </head>
 <body>
   <div class="topbar">مدرسة العب الثانوية للبنات · قسم الفيزياء · مجلة الفيزياء</div>
@@ -214,6 +226,32 @@
     <div id="cardsContainer" class="cards"><div class="empty">يتم تحميل المشاركات…</div></div>
   </main>
 
+  
+    <div class="admin-entry">
+      <button id="adminToggle" class="admin-toggle" type="button">لوحة المشرفة</button>
+      <section id="adminPanel" class="admin-panel" hidden>
+        <h3>إدارة خواطر الأمهات</h3>
+        <div id="adminAuth" class="admin-auth">
+          <p>الدخول محمي برمز يُرسل إلى البريد الإلكتروني المخوّل فقط. لا يمكن للأمهات حذف المشاركات.</p>
+          <label for="adminEmail">البريد الإلكتروني للمشرفة</label>
+          <div class="admin-line">
+            <input id="adminEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
+            <button id="adminSendCode" class="btn btn-secondary" type="button">إرسال رمز الدخول</button>
+          </div>
+          <label for="adminCode">رمز التحقق من البريد</label>
+          <div class="admin-line">
+            <input id="adminCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="رمز التحقق">
+            <button id="adminVerifyCode" class="btn btn-primary" type="button">دخول</button>
+          </div>
+        </div>
+        <div id="adminLogged" class="admin-logged" hidden>
+          <p>تم التحقق من حساب المشرفة. تظهر الآن أزرار الحذف بجانب الخواطر، ويجب تأكيد الحذف قبل تنفيذه.</p>
+          <button id="adminLogout" class="btn btn-secondary" type="button">تسجيل الخروج</button>
+        </div>
+        <div class="admin-status" id="adminStatus" role="status"></div>
+      </section>
+    </div>
+
   <footer>خارج المعادلة · ديوان الأمهات · قسم الفيزياء</footer>
 
   <div id="certModal" class="modal" aria-hidden="true">
@@ -253,6 +291,14 @@
     let rows = [];
     let lastRow = null;
     let currentRow = null;
+    let isAdmin = false;
+    const ADMIN_EMAIL = 'decisiontrail@gmail.com';
+    const adminPanel = document.getElementById('adminPanel');
+    const adminStatus = document.getElementById('adminStatus');
+    const adminAuth = document.getElementById('adminAuth');
+    const adminLogged = document.getElementById('adminLogged');
+    const adminEmail = document.getElementById('adminEmail');
+    const adminCode = document.getElementById('adminCode');
 
     const esc = (s='') => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const arDate = d => new Date(d || Date.now()).toLocaleDateString('ar-QA', {year:'numeric',month:'long',day:'numeric'});
@@ -344,6 +390,7 @@
           <div class="actions">
             <button class="btn btn-soft copy-btn" type="button" data-id="${esc(row.id)}">نسخ الخاطرة</button>
             <button class="btn btn-secondary cert-btn" type="button" data-id="${esc(row.id)}">توليد شهادة</button>
+            ${isAdmin ? `<button class="btn delete-btn" type="button" data-id="${esc(row.id)}">حذف الرسالة</button>` : ''}
           </div>
         </article>`).join('');
 
@@ -361,11 +408,70 @@ ${row.mother_name} · والدة الطالبة ${row.daughter_name} · ${row.gr
       cardsContainer.querySelectorAll('.cert-btn').forEach(btn => btn.addEventListener('click', () => {
         const row = rows.find(r => r.id === btn.dataset.id); if (row) openCert(row);
       }));
+
+      cardsContainer.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async () => {
+        if (!db || !isAdmin) return;
+        const row = rows.find(r => r.id === btn.dataset.id);
+        if (!row) return;
+        if (!window.confirm('هل تريدين حذف رسالة ' + row.mother_name + ' نهائيًا من الموقع؟ لا يمكن التراجع عن الحذف.')) return;
+        btn.disabled = true; btn.textContent = 'جارٍ الحذف…';
+        try {
+          const { data, error } = await db.from('mother_submissions').delete().eq('id', row.id).select('id');
+          if (error) throw error;
+          if (!data || data.length !== 1) throw new Error('لم تُمنح صلاحية حذف هذه الرسالة');
+          rows = rows.filter(item => item.id !== row.id);
+          renderRows();
+          adminStatus.textContent = 'تم حذف الرسالة بنجاح.';
+        } catch (error) {
+          console.error(error);
+          adminStatus.textContent = 'تعذّر حذف الرسالة. تحققي من حساب المشرفة واتصال الموقع.';
+          btn.disabled = false; btn.textContent = 'حذف الرسالة';
+        }
+      }));
     }
 
     try {
       const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm');
       db = createClient(PROJECT_URL, PUBLISHABLE_KEY);
+
+      document.getElementById('adminToggle').addEventListener('click', () => { adminPanel.hidden = !adminPanel.hidden; });
+      const refreshAdmin = async () => {
+        const { data: { user }, error } = await db.auth.getUser();
+        isAdmin = !error && !!user && (user.email || '').toLowerCase() === ADMIN_EMAIL;
+        adminAuth.hidden = isAdmin;
+        adminLogged.hidden = !isAdmin;
+        renderRows();
+        return isAdmin;
+      };
+      document.getElementById('adminSendCode').addEventListener('click', async () => {
+        const email = adminEmail.value.trim().toLowerCase();
+        if (!email || !adminEmail.validity.valid) { adminStatus.textContent = 'يرجى إدخال بريد إلكتروني صحيح.'; return; }
+        adminStatus.textContent = 'جارٍ إرسال رسالة التحقق…';
+        const { error } = await db.auth.signInWithOtp({
+          email,
+          options: { emailRedirectTo: 'https://hafsa-hub-dot.github.io/Outside-Equation/' }
+        });
+        adminStatus.textContent = error ? 'تعذّر إرسال رسالة التحقق: ' + error.message : 'تحققي من البريد الإلكتروني، وأدخلي رمز التحقق إن وُجد. يمكن استخدام رابط الدخول المرسل أيضًا.';
+      });
+      document.getElementById('adminVerifyCode').addEventListener('click', async () => {
+        const email = adminEmail.value.trim().toLowerCase();
+        const token = adminCode.value.trim();
+        if (!email || !token) { adminStatus.textContent = 'أدخلي البريد والرمز المرسل إليه.'; return; }
+        const { error } = await db.auth.verifyOtp({ email, token, type: 'email' });
+        if (error) { adminStatus.textContent = 'تعذّر التحقق من الرمز: ' + error.message; return; }
+        const ok = await refreshAdmin();
+        adminStatus.textContent = ok ? 'مرحبًا بالمشرفة، يمكنكِ الآن حذف الرسائل.' : 'هذا الحساب غير مخوّل بحذف المشاركات.';
+      });
+      document.getElementById('adminLogout').addEventListener('click', async () => {
+        await db.auth.signOut();
+        await refreshAdmin();
+        adminStatus.textContent = 'تم تسجيل الخروج من لوحة المشرفة.';
+      });
+      db.auth.onAuthStateChange(() => {
+        setTimeout(() => { refreshAdmin().catch(console.error); }, 0);
+      });
+      await refreshAdmin();
+
       submitBtn.disabled = false;
       state.textContent = 'الموقع جاهز. يمكنكِ معاينة الشهادة قبل النشر، ثم نشر الخاطرة.';
 
