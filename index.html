@@ -143,6 +143,32 @@
     .admin-line .btn{white-space:nowrap}
     .admin-status{color:#694c30;font-size:13px;line-height:1.9;margin-top:8px}
     .delete-btn{background:#fff5f4;border:1px solid #d6a6a2;color:#a22c35}
+
+    /* تصميم تحريري فاخر */
+    .welcome{background:linear-gradient(110deg,#fffefa,#f7f0e9 65%,#eef1f7)}
+    .welcome h1{letter-spacing:-.02em}
+    .wrap{max-width:1180px}
+    .panel{border-radius:8px 28px 8px 28px;box-shadow:0 25px 55px #443b2a0e}
+    .journal-heading{margin:62px auto 20px;text-align:center;border-top:1px solid #d8c4a4;padding-top:26px}
+    .journal-eyebrow{font-size:13px;color:#a47a42;font-weight:700;letter-spacing:1px}
+    .journal-heading h2{font:normal clamp(42px,6vw,67px) 'Amiri',serif;color:#783c52;margin:2px 0;line-height:1.2}
+    .journal-heading p{font:normal 23px/1.8 'Amiri',serif;color:#776954;margin:0 auto;max-width:750px}
+    .browse-toolbar{margin:18px 0 20px;padding:20px 23px;background:#fffdf8;border:1px solid #dfcba9;box-shadow:0 12px 40px #4e402610;border-radius:18px}
+    .search-label{font-size:13px;margin:0 0 10px;color:#806441}
+    .browse-controls{display:grid;grid-template-columns:minmax(0,1fr) 180px;gap:12px}
+    .browse-status{margin:10px 0 0;font-size:13px;color:#897356}
+    .cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:19px}
+    .card{position:relative;display:flex;flex-direction:column;min-width:0;min-height:295px;border:1px solid #dfcba9;background:linear-gradient(148deg,#fffdf9,#fff8ed);border-radius:8px 30px 8px 30px;padding:29px;box-shadow:0 17px 40px #45341f0d}
+    .card:before{content:'❦';display:block;font:normal 27px Amiri,serif;color:#b5935b;margin-bottom:4px}
+    .card blockquote{font:normal 25px/1.9 Amiri,serif;flex:1}
+    .card .meta{border-top:1px solid #e9dbc6;padding-top:12px;line-height:1.9}
+    .card .actions{margin-top:17px}
+    .card .actions .btn{font-size:13px;padding:10px 18px}
+    .delete-btn{background:#fff7f6;border:1px solid #dfb9b6;color:#9c4851}
+    .pager{display:flex;justify-content:center;align-items:center;gap:12px;flex-wrap:wrap;margin:24px auto}
+    .pager[hidden]{display:none}
+    .pager span{font-weight:700;color:#755d3c}
+    @media(max-width:760px){.cards{grid-template-columns:1fr}.browse-controls{grid-template-columns:1fr}.browse-toolbar{padding:15px}.card{min-height:210px;padding:22px}.journal-heading{margin-top:44px}}
 </style>
 </head>
 <body>
@@ -219,39 +245,28 @@
       </div>
     </section>
 
-    <div class="cards-head" id="cards">
-      <h2>خواطر الأمهات</h2>
-      <div class="small">يمكن نسخ الخاطرة أو توليد شهادة لها.</div>
+    <div class="journal-heading" id="cards">
+      <span class="journal-eyebrow">✦ صفحات من القلب ✦</span>
+      <h2>ديوان الأمهات</h2>
+      <p>هنا تنمو الكلمات كما تنمو الحكايات الجميلة… تصفحي، وانسخي، واحتفي بكل مشاركة.</p>
+    </div>
+    <div class="browse-toolbar">
+      <label class="search-label" for="browseSearch">ابحثي في صفحات الديوان</label>
+      <div class="browse-controls">
+        <input id="browseSearch" type="search" placeholder="ابحثي باسم الأم أو الطالبة أو بكلمة من الخاطرة…">
+        <select id="browseSort" aria-label="ترتيب المشاركات"><option value="newest">الأحدث أولًا</option><option value="oldest">الأقدم أولًا</option></select>
+      </div>
+      <p id="browseStatus" class="browse-status" role="status">يتم تجهيز صفحات الديوان…</p>
     </div>
     <div id="cardsContainer" class="cards"><div class="empty">يتم تحميل المشاركات…</div></div>
+    <div class="pager" id="pager" hidden>
+      <button type="button" class="btn btn-secondary" id="prevPage">السابق</button>
+      <span id="pageInfo"></span>
+      <button type="button" class="btn btn-secondary" id="nextPage">التالي</button>
+    </div>
   </main>
 
   
-    <div class="admin-entry">
-      <button id="adminToggle" class="admin-toggle" type="button">لوحة المشرفة</button>
-      <section id="adminPanel" class="admin-panel" hidden>
-        <h3>إدارة خواطر الأمهات</h3>
-        <div id="adminAuth" class="admin-auth">
-          <p>الدخول محمي برمز يُرسل إلى البريد الإلكتروني المخوّل فقط. لا يمكن للأمهات حذف المشاركات.</p>
-          <label for="adminEmail">البريد الإلكتروني للمشرفة</label>
-          <div class="admin-line">
-            <input id="adminEmail" type="email" autocomplete="email" placeholder="البريد الإلكتروني">
-            <button id="adminSendCode" class="btn btn-secondary" type="button">إرسال رمز الدخول</button>
-          </div>
-          <label for="adminCode">رمز التحقق من البريد</label>
-          <div class="admin-line">
-            <input id="adminCode" type="text" inputmode="numeric" autocomplete="one-time-code" placeholder="رمز التحقق">
-            <button id="adminVerifyCode" class="btn btn-primary" type="button">دخول</button>
-          </div>
-        </div>
-        <div id="adminLogged" class="admin-logged" hidden>
-          <p>تم التحقق من حساب المشرفة. تظهر الآن أزرار الحذف بجانب الخواطر، ويجب تأكيد الحذف قبل تنفيذه.</p>
-          <button id="adminLogout" class="btn btn-secondary" type="button">تسجيل الخروج</button>
-        </div>
-        <div class="admin-status" id="adminStatus" role="status"></div>
-      </section>
-    </div>
-
   <footer>خارج المعادلة · ديوان الأمهات · قسم الفيزياء</footer>
 
   <div id="certModal" class="modal" aria-hidden="true">
@@ -289,17 +304,15 @@
 
     let db = null;
     let rows = [];
+    let browsePage = 1;
+    const browsePageSize = 8;
+    const browseSearch = document.getElementById('browseSearch');
+    const browseSort = document.getElementById('browseSort');
+    const browseStatus = document.getElementById('browseStatus');
+    const pager = document.getElementById('pager');
+    const pageInfo = document.getElementById('pageInfo');
     let lastRow = null;
     let currentRow = null;
-    let isAdmin = false;
-    const ADMIN_EMAIL = 'decisiontrail@gmail.com';
-    const adminPanel = document.getElementById('adminPanel');
-    const adminStatus = document.getElementById('adminStatus');
-    const adminAuth = document.getElementById('adminAuth');
-    const adminLogged = document.getElementById('adminLogged');
-    const adminEmail = document.getElementById('adminEmail');
-    const adminCode = document.getElementById('adminCode');
-
     const esc = (s='') => String(s).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
     const arDate = d => new Date(d || Date.now()).toLocaleDateString('ar-QA', {year:'numeric',month:'long',day:'numeric'});
     const certCode = row => {
@@ -379,18 +392,29 @@
     document.addEventListener('keydown', e => { if (e.key === 'Escape') closeCert(); });
 
     function renderRows() {
-      if (!rows.length) {
-        cardsContainer.innerHTML = '<div class="empty">بانتظار أولى الخواطر ♡</div>';
+      const query = browseSearch.value.trim().toLocaleLowerCase('ar');
+      const filtered = rows.filter(row => !query || [row.body,row.mother_name,row.daughter_name,row.grade].some(v => String(v || '').toLocaleLowerCase('ar').includes(query)));
+      const sorted = browseSort.value === 'oldest' ? [...filtered].reverse() : filtered;
+      const totalPages = Math.max(1, Math.ceil(sorted.length / browsePageSize));
+      browsePage = Math.min(browsePage,totalPages);
+      const visible = sorted.slice((browsePage-1)*browsePageSize,browsePage*browsePageSize);
+      browseStatus.textContent = sorted.length + ' مشاركة في الديوان' + (query ? ' مطابقة للبحث' : '') + ' · يمكن حذف أي رسالة بعد التأكيد';
+      pager.hidden = totalPages < 2;
+      pageInfo.textContent = 'صفحة ' + browsePage + ' من ' + totalPages;
+      document.getElementById('prevPage').disabled = browsePage <= 1;
+      document.getElementById('nextPage').disabled = browsePage >= totalPages;
+      if (!visible.length) {
+        cardsContainer.innerHTML = '<div class="empty">لا توجد خواطر مطابقة حاليًا ♡</div>';
         return;
       }
-      cardsContainer.innerHTML = rows.map(row => `
+      cardsContainer.innerHTML = visible.map(row => `
         <article class="card">
           <blockquote>«${esc(row.body)}»</blockquote>
           <div class="meta">بقلم ${esc(row.mother_name)} · والدة الطالبة ${esc(row.daughter_name)} · ${esc(row.grade)} · ${esc(arDate(row.created_at))}</div>
           <div class="actions">
             <button class="btn btn-soft copy-btn" type="button" data-id="${esc(row.id)}">نسخ الخاطرة</button>
             <button class="btn btn-secondary cert-btn" type="button" data-id="${esc(row.id)}">توليد شهادة</button>
-            ${isAdmin ? `<button class="btn delete-btn" type="button" data-id="${esc(row.id)}">حذف الرسالة</button>` : ''}
+            <button class="btn delete-btn" type="button" data-id="${esc(row.id)}">حذف الرسالة</button>
           </div>
         </article>`).join('');
 
@@ -410,10 +434,10 @@ ${row.mother_name} · والدة الطالبة ${row.daughter_name} · ${row.gr
       }));
 
       cardsContainer.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', async () => {
-        if (!db || !isAdmin) return;
+        if (!db) return;
         const row = rows.find(r => r.id === btn.dataset.id);
         if (!row) return;
-        if (!window.confirm('هل تريدين حذف رسالة ' + row.mother_name + ' نهائيًا من الموقع؟ لا يمكن التراجع عن الحذف.')) return;
+        if (!window.confirm('سيتم حذف خاطرة ' + row.mother_name + ' نهائيًا من الموقع لجميع الزائرات. هل أنت متأكدة؟')) return;
         btn.disabled = true; btn.textContent = 'جارٍ الحذف…';
         try {
           const { data, error } = await db.from('mother_submissions').delete().eq('id', row.id).select('id');
@@ -421,56 +445,23 @@ ${row.mother_name} · والدة الطالبة ${row.daughter_name} · ${row.gr
           if (!data || data.length !== 1) throw new Error('لم تُمنح صلاحية حذف هذه الرسالة');
           rows = rows.filter(item => item.id !== row.id);
           renderRows();
-          adminStatus.textContent = 'تم حذف الرسالة بنجاح.';
+          browseStatus.textContent = 'تم حذف الرسالة من الديوان.';
         } catch (error) {
           console.error(error);
-          adminStatus.textContent = 'تعذّر حذف الرسالة. تحققي من حساب المشرفة واتصال الموقع.';
+          browseStatus.textContent = 'تعذّر الحذف. أعيدي المحاولة.';
           btn.disabled = false; btn.textContent = 'حذف الرسالة';
         }
       }));
     }
 
+    browseSearch.addEventListener('input', () => { browsePage = 1; renderRows(); });
+    browseSort.addEventListener('change', () => { browsePage = 1; renderRows(); });
+    document.getElementById('prevPage').addEventListener('click', () => { if (browsePage > 1) { browsePage--; renderRows(); document.getElementById('cards').scrollIntoView({behavior:'smooth'}); } });
+    document.getElementById('nextPage').addEventListener('click', () => { browsePage++; renderRows(); document.getElementById('cards').scrollIntoView({behavior:'smooth'}); });
+
     try {
       const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.95.3/+esm');
       db = createClient(PROJECT_URL, PUBLISHABLE_KEY);
-
-      document.getElementById('adminToggle').addEventListener('click', () => { adminPanel.hidden = !adminPanel.hidden; });
-      const refreshAdmin = async () => {
-        const { data: { user }, error } = await db.auth.getUser();
-        isAdmin = !error && !!user && (user.email || '').toLowerCase() === ADMIN_EMAIL;
-        adminAuth.hidden = isAdmin;
-        adminLogged.hidden = !isAdmin;
-        renderRows();
-        return isAdmin;
-      };
-      document.getElementById('adminSendCode').addEventListener('click', async () => {
-        const email = adminEmail.value.trim().toLowerCase();
-        if (!email || !adminEmail.validity.valid) { adminStatus.textContent = 'يرجى إدخال بريد إلكتروني صحيح.'; return; }
-        adminStatus.textContent = 'جارٍ إرسال رسالة التحقق…';
-        const { error } = await db.auth.signInWithOtp({
-          email,
-          options: { emailRedirectTo: 'https://hafsa-hub-dot.github.io/Outside-Equation/' }
-        });
-        adminStatus.textContent = error ? 'تعذّر إرسال رسالة التحقق: ' + error.message : 'تحققي من البريد الإلكتروني، وأدخلي رمز التحقق إن وُجد. يمكن استخدام رابط الدخول المرسل أيضًا.';
-      });
-      document.getElementById('adminVerifyCode').addEventListener('click', async () => {
-        const email = adminEmail.value.trim().toLowerCase();
-        const token = adminCode.value.trim();
-        if (!email || !token) { adminStatus.textContent = 'أدخلي البريد والرمز المرسل إليه.'; return; }
-        const { error } = await db.auth.verifyOtp({ email, token, type: 'email' });
-        if (error) { adminStatus.textContent = 'تعذّر التحقق من الرمز: ' + error.message; return; }
-        const ok = await refreshAdmin();
-        adminStatus.textContent = ok ? 'مرحبًا بالمشرفة، يمكنكِ الآن حذف الرسائل.' : 'هذا الحساب غير مخوّل بحذف المشاركات.';
-      });
-      document.getElementById('adminLogout').addEventListener('click', async () => {
-        await db.auth.signOut();
-        await refreshAdmin();
-        adminStatus.textContent = 'تم تسجيل الخروج من لوحة المشرفة.';
-      });
-      db.auth.onAuthStateChange(() => {
-        setTimeout(() => { refreshAdmin().catch(console.error); }, 0);
-      });
-      await refreshAdmin();
 
       submitBtn.disabled = false;
       state.textContent = 'الموقع جاهز. يمكنكِ معاينة الشهادة قبل النشر، ثم نشر الخاطرة.';
